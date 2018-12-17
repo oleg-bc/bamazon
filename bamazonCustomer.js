@@ -92,7 +92,8 @@ function checkProdQuantity(userInput) {
             console.log("Insufficient quantity in stock!!");
             process.exit();
         } else {
-            console.log("order successful");
+            console.log("ORDER SUCCESSFULL");
+            console.log("YOUR ORDER TOTAL IS   " + res[0].price);
             var newAmt = res[0].quantity - selectedAmount
             updateProduct(newAmt, userInput.selectedItemID);
         }
