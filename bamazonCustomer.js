@@ -21,10 +21,9 @@ connection.connect(function (err) {
 function afterConnection() {
     connection.query("SELECT * FROM productsTable", function (err, res) {
         if (err) throw err;
-
     });
 }
-
+var firstRun=true;
 function readProds() {
     console.log("Selecting all Prods...\n");
     connection.query("SELECT * FROM productsTable", function (err, res) {
@@ -42,7 +41,12 @@ function readProds() {
             t2.newRow()
         })
         console.log(t2.toString())
+        if (firstRun==true){
         callInquirer();
+        firstRun=false;
+        }else{
+            process.exit();
+        }
     });
 }
 //===END DISPLAY==========
@@ -84,64 +88,33 @@ var newQuantity;
 function checkProdQuantity(userInput) {
     connection.query("SELECT * FROM productsTable WHERE item_id=" + userInput.selectedItemID, function (err, res) {
         if (err) throw err;
-        console.log("res is now (inside checkProd...) is     ");
-        console.log(res);
         if (res[0].quantity < selectedAmount) {
-            console.log("not enough!!");
-        }else{
+            console.log("Insufficient quantity in stock!!");
+            process.exit();
+        } else {
             console.log("order successful");
-            var newAmt = res[0].quantity-selectedAmount
+            var newAmt = res[0].quantity - selectedAmount
             updateProduct(newAmt, userInput.selectedItemID);
         }
     });
 }
-
 //new
-function updateProduct(newQuantity,temProdID) {
+function updateProduct(newQuantity, temProdID) {
     console.log("Updating product quantity...\n");
-      var query = connection.query(
-      "UPDATE productsTable SET  ? WHERE ?", 
-    //   newQuantity,
-    //   temProdId,
-      [
-        {
-            quantity: newQuantity
-        },
-        {
-            item_id:temProdID
+    var query = connection.query(
+        "UPDATE productsTable SET  ? WHERE ?",
+        [
+            {
+                quantity: newQuantity
+            },
+            {
+                item_id: temProdID
+            }
+        ],
+        function (err, res) {
+            console.log(res.affectedRows + " products updated!\n");
+            readProds();
+            
         }
-      ],
-      function(err, res) {
-        console.log(res.affectedRows + " products updated!\n");
-        //-----------experiment printing one-----------
-        readProds();
-        //-----------experiment -----------
-        // Call deleteProduct AFTER the UPDATE completes
-         }
     );
 }
-
-
-//old
-
-// function updateQuantity() {
-//     console.log("Updating product quantity...\n");
-    
-//     var query = connection.query(
-//       "UPDATE productsTable SET ? WHERE item_id = " + 
-//       newQuantity;
-//       userInput.selectedItemID,
-     
-//       function(err, res) {
-//         console.log(res.affectedRows + " products updated!\n");
-//         // Call deleteProduct AFTER the UPDATE completes
-        
-//       }
-//     );
-  
-
-// TODO:
-//1. use the USER INPUT vars to change db
-    // 2. check if user amount is less than stock amount  -- if y notify with error
-    // --2.1 if n decrement amount   
-    // 
